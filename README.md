@@ -22,9 +22,11 @@ git clone https://github.com/thompsonsed/google_define
 # either run directly in python
 python google_define.py statement to lookup
 # Or add the following function to your .bashrc or .zshrc
-thesaurus(){
+dict(){
     python ~/path/to/google_define.py $@
 }
+# And call using
+dict act
 ```
 
 
