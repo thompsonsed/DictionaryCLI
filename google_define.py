@@ -2,6 +2,7 @@
 import argparse
 import requests
 from bs4 import BeautifulSoup
+import re
 
 
 def get_soup(searchword):
@@ -19,12 +20,18 @@ def get_soup(searchword):
     return soup
 
 
-class definition:
+class Definition:
     """
     The main definition class. Parses the google search output for the important elements.
     """
 
     def __init__(self, soup):
+        self.sentence = None
+        self.phonetic = None
+        self.forms = None
+        self.fulldefs = None
+        self.synolist = None
+        self.antolist = None
         try:
             rawchunk = soup.find("div", id="ires")
         except:
@@ -33,42 +40,44 @@ class definition:
         if rawchunk:
             try:
                 self.syllabic = rawchunk.find("span", attrs={"data-dobid": "hdw"}).text
-            except:
+            except AttributeError:
                 self.syllabic = ""
 
             try:
                 self.phonetic = rawchunk.find("span", class_="lr_dct_ph").text
-            except:
+            except AttributeError:
                 self.phonetic = ""
 
             try:
-                self.forms = rawchunk.find("div", class_="xpdxpnd vk_gy").text
-            except:
+                self.forms = [x.text for x in rawchunk.find_all("div", class_="xpdxpnd vk_gy")]
+            except AttributeError:
                 pass
 
             try:
                 self.fulldefs = [i.text for i in rawchunk.find_all("div", attrs={"data-dobid": "dfn"})]
-            except:
+            except AttributeError:
                 pass
 
             try:
                 self.sentence = rawchunk.find("div", class_="lr_dct_more_blk xpdxpnd xpdnoxpnd vk_gy").text
-            except:
+            except AttributeError:
                 pass
 
             try:
                 thesrus = rawchunk.find_all("table", class_="vk_tbl vk_gy")
-            except:
+            except AttributeError:
+                thesrus = None
+
+            try:
+                all_synonyms = [i.text.replace("synonyms:", "") for i in thesrus if "synonyms:" in i.text]
+                self.synolist = [re.split(r"[;,]+", x) for x in all_synonyms]
+            except AttributeError:
                 pass
 
             try:
-                self.synolist = [i.text for i in thesrus[0].find_all("a")]
-            except:
-                pass
-
-            try:
-                self.antolist = [i.text for i in thesrus[1].find_all("a")]
-            except:
+                all_antos = [i.text.replace("antonyms:", "") for i in thesrus if "antonyms:" in i.text]
+                self.antolist = [re.split(r"[;,]+", x) for x in all_antos]
+            except AttributeError:
                 pass
 
     def __repr__(self):
@@ -90,26 +99,46 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("search", nargs="+", help="type the word you want to search here")
+    parser.add_argument(
+        "--more",
+        dest="more",
+        action="store_true",
+        required=False,
+        default=False,
+        help="Get more synonyms and antonyms.",
+    )
     args = parser.parse_args()
     searchword = " ".join(args.search)
-    defi = definition(get_soup(searchword))
+    defi = Definition(get_soup(searchword))
     if defi.syllabic:
         head = "%s . %s . %s" % (searchword, defi.syllabic, defi.phonetic)
         print(TerminalColours.HEADER + head + TerminalColours.ENDC)
         print(TerminalColours.OKGREEN + " - " + "\n - ".join(defi.fulldefs) + TerminalColours.ENDC)
-        if hasattr(defi, "forms"):
-            print("\n" + TerminalColours.HEADER + "forms:" + TerminalColours.ENDC)
-            print(TerminalColours.OKGREEN + " - " + "\n - ".join(defi.forms.split(";")) + TerminalColours.ENDC)
-        if hasattr(defi, "sentence"):
-            print("\n" + TerminalColours.HEADER + "usage:" + TerminalColours.ENDC)
-            print(TerminalColours.OKGREEN + " " + defi.sentence + TerminalColours.ENDC)
-        if hasattr(defi, "synolist"):
-            print("\n" + TerminalColours.HEADER + "synonyms:" + TerminalColours.ENDC)
-            print(TerminalColours.OKGREEN + " " + ", ".join(defi.synolist) + TerminalColours.ENDC)
-        if hasattr(defi, "antolist"):
+        if defi.forms is not None:
+            print("\n{}forms:{}".format(TerminalColours.HEADER, TerminalColours.ENDC))
+            for row in defi.forms:
+                form = [x.strip(" ") for x in row.split(";")]
+                print("{} - {}{}".format(TerminalColours.OKGREEN, form[0], TerminalColours.ENDC))
+                [print("{}   * {}{}".format(TerminalColours.OKGREEN, x, TerminalColours.ENDC)) for x in form[1:]]
+        if defi.sentence is not None:
+            print("\n{}usage:{}".format(TerminalColours.HEADER, TerminalColours.ENDC))
+            print("{} {}{}".format(TerminalColours.OKGREEN, defi.sentence,TerminalColours.ENDC))
+        if defi.synolist is not None:
+            print("\n{}synonyms:{}".format(TerminalColours.HEADER, TerminalColours.ENDC))
+            for i, row in enumerate(defi.synolist):
+                if not args.more:
+                    row = row[:5]
+                print("{}- {}{}".format(TerminalColours.OKGREEN, ", ".join(row), TerminalColours.ENDC))
+            # print(TerminalColours.OKGREEN + " " + ", ".join(defi.synolist) + TerminalColours.ENDC)
+        if defi.antolist is not None:
             print("\n" + TerminalColours.HEADER + "antonyms:" + TerminalColours.ENDC)
-            print(TerminalColours.OKGREEN + " " + ", ".join(defi.antolist) + TerminalColours.ENDC)
+            for i, row in enumerate(defi.antolist):
+                if not args.more:
+                    row = row[:5]
+                print("{}- {}{}".format(TerminalColours.OKGREEN, ", ".join(row), TerminalColours.ENDC))
         print()
+        if not args.more:
+            print("Find more synonyms and antonyms by running with --more.")
 
 
 if __name__ == "__main__":
