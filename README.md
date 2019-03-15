@@ -9,6 +9,7 @@ I love the simplicity of being able to look up words using google's "define {wor
 * Python modules
     * `Requests`
     * `BeautifulSoup`
+    * `html5`
 
 ## Usage
 ```
