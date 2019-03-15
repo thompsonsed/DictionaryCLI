@@ -32,4 +32,4 @@ dict act
 
 ## Updates
 - Added python 3 support
-- Better parsing of multiple synonyms and antonyms
+- Better parsing of multiple mearnings, synonyms and antonyms using the [unofficial google dictionary api](https://github.com/meetDeveloper/googleDictionaryAPI)
