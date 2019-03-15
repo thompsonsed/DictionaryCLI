@@ -9,8 +9,8 @@ Use the provided bash function (below) or call the python script directly.
 
 ## Dependencies
 * Python modules
-    * `Requests`
-    * `BeautifulSoup`
+    * `requests`
+    * `beautifulsoup4`
     * `html5`
 
 ## Usage
