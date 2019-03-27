@@ -8,6 +8,8 @@ I love the simplicity of being able to look up words using google's "define {wor
 Use the provided bash function (below) or call the python script directly.
 
 ## Dependencies
+
+* Python>=3.6
 * Python modules
     * `requests`
     * `beautifulsoup4`
