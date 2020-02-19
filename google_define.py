@@ -73,9 +73,7 @@ class DictionarySearch:
             else:
                 raise requests.exceptions.RequestException("Request return code not OK.")
         except requests.exceptions.RequestException:
-            for site in [
-            "https://mydictionaryapi.appspot.com/",
-            "https://googledictionaryapi.eu-gb.mybluemix.net/",]:
+            for site in ["https://mydictionaryapi.appspot.com/", "https://googledictionaryapi.eu-gb.mybluemix.net/"]:
                 try:
                     req = requests.get(site, params={"define": str(self.keyword)}, timeout=10)
                     if req.status_code == requests.codes.ok:
