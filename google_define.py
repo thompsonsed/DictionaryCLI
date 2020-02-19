@@ -61,7 +61,7 @@ class DictionarySearch:
         """
         Gets a request from an unofficial google dictionary api of the set keyword.
         """
-        for site in ["https://mydictionaryapi.appspot.com/", "https://googledictionaryapi.eu-gb.mybluemix.net/"]:
+        for site in ["https://api.dictionaryapi.dev/api/v1/entries/en/", "https://mydictionaryapi.appspot.com/", "https://googledictionaryapi.eu-gb.mybluemix.net/"]:
             try:
                 req = requests.get(site, params={"define": str(self.keyword)},
                                    timeout=10)
