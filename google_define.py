@@ -7,6 +7,7 @@ import requests
 
 class TerminalColours:
     """Define the colours for printing to the terminal."""
+
     HEADER = "\033[95m"
     OKBLUE = "\033[94m"
     OKGREEN = "\033[92m"
@@ -35,8 +36,11 @@ class Interpretation:
                 # Only output the first 2 definitions for each group, unless more is provided.
                 if i > 1 and not self.more:
                     break
-                for base_colour, group in [(TerminalColours.OKGREEN, "definition"),
-                                           (TerminalColours.OKBLUE, "synonyms"), (TerminalColours.OKBLUE, "antonyms")]:
+                for base_colour, group in [
+                    (TerminalColours.OKGREEN, "definition"),
+                    (TerminalColours.OKBLUE, "synonyms"),
+                    (TerminalColours.OKBLUE, "antonyms"),
+                ]:
                     if group in meaning.keys():
                         vals = meaning.get(group, "")
                         if isinstance(vals, list):
@@ -61,16 +65,25 @@ class DictionarySearch:
         """
         Gets a request from an unofficial google dictionary api of the set keyword.
         """
-        for site in ["https://api.dictionaryapi.dev/api/v1/entries/en/", "https://mydictionaryapi.appspot.com/", "https://googledictionaryapi.eu-gb.mybluemix.net/"]:
-            try:
-                req = requests.get(site, params={"define": str(self.keyword)},
-                                   timeout=10)
-                if req.status_code == requests.codes.ok:
-                    self.text = req.text
-                    req.close()
-                    break
-            except requests.exceptions.RequestException:
-                pass
+        try:
+            req = requests.get(f"https://api.dictionaryapi.dev/api/v1/entries/en/{str(self.keyword)}", timeout=10)
+            if req.status_code == requests.codes.ok:
+                self.text = req.text
+                req.close()
+            else:
+                raise requests.exceptions.RequestException("Request return code not OK.")
+        except requests.exceptions.RequestException:
+            for site in [
+            "https://mydictionaryapi.appspot.com/",
+            "https://googledictionaryapi.eu-gb.mybluemix.net/",]:
+                try:
+                    req = requests.get(site, params={"define": str(self.keyword)}, timeout=10)
+                    if req.status_code == requests.codes.ok:
+                        self.text = req.text
+                        req.close()
+                        break
+                except requests.exceptions.RequestException:
+                    pass
         if self.text is None:
             raise IOError("Could not get query form unofficial google dictionary api.")
 
@@ -80,9 +93,15 @@ class DictionarySearch:
         if not isinstance(j, list):
             j = [j]
         for each in j:
-            self.interpretations.append(Interpretation(self.keyword, self.more, each.get("word", self.keyword),
-                                                       each.get("phonetic", ""),
-                                                       each.get("meaning")))
+            self.interpretations.append(
+                Interpretation(
+                    self.keyword,
+                    self.more,
+                    each.get("word", self.keyword),
+                    each.get("phonetic", ""),
+                    each.get("meaning"),
+                )
+            )
 
     def output(self):
         """Write all interpretations to the console."""
