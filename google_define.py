@@ -1,4 +1,4 @@
-"""Script which uses beautiful soup and google's define to get the dictionary and thesaurus information of a word."""
+"""Script which uses google's define to get the dictionary and thesaurus information of a word."""
 import argparse
 import json
 

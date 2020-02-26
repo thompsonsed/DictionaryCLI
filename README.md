@@ -12,7 +12,6 @@ Use the provided bash function (below) or call the python script directly.
 * Python>=3.6
 * Python modules
     * `requests`
-    * `beautifulsoup4`
     * `html5`
 
 ## Usage
@@ -33,5 +32,6 @@ dict act
 
 
 ## Updates
+- Updated to use the new API
 - Added python 3 support
 - Better parsing of multiple mearnings, synonyms and antonyms using the [unofficial google dictionary api](https://github.com/meetDeveloper/googleDictionaryAPI)
